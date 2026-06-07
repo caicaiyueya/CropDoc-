@@ -34,7 +34,27 @@
   font-weight: 700;
   color: #28b446;
   line-height: 1.5;
-  margin-bottom: 20rpx;
+  margin-bottom: 12rpx;
+}
+
+.inference-tag {
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+}
+
+.inference-tag--real {
+  background: #e8f5e9;
+  color: #28b446;
+}
+
+.inference-tag--mock {
+  background: #fff3e0;
+  color: #e65100;
 }
 
 .disease-meta {

@@ -81,17 +81,22 @@ Page({
       return
     }
     this.setData({ loading: true, canSubmit: false })
+    wx.showLoading({ title: 'AI 识别中…', mask: true })
     try {
       const fileID = await uploadFile(this.data.imagePath)
       const result = await callApi('detect', {
         crop: this.data.selectedCrop,
         fileID
-      })
+      }, { timeout: 60000 })
       this.setData({ imagePath: '' }, this.syncSubmitState)
       wx.navigateTo({
         url: `/pages/detect-result/index?data=${encodeURIComponent(JSON.stringify(result))}`
       })
+    } catch (e) {
+      const msg = (e && e.message) || (e && e.errMsg) || '识别失败'
+      wx.showToast({ title: msg, icon: 'none', duration: 3500 })
     } finally {
+      wx.hideLoading()
       this.setData({ loading: false }, this.syncSubmitState)
     }
   }

@@ -1,11 +1,11 @@
 <template>
-  <div>
-    <h2>社区审核</h2>
-    <el-radio-group v-model="status" @change="load" style="margin: 16px 0">
+  <div class="page-panel">
+    <h2 class="page-title">社区审核</h2>
+    <el-radio-group v-model="status" class="status-tabs" @change="load">
       <el-radio-button label="pending">待审核</el-radio-button>
       <el-radio-button label="approved">已通过</el-radio-button>
     </el-radio-group>
-    <el-table :data="list" border>
+    <el-table :data="list">
       <el-table-column prop="title" label="标题" />
       <el-table-column prop="postType" label="类型" width="100" />
       <el-table-column prop="content" label="内容" show-overflow-tooltip />
@@ -23,15 +23,29 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { callAdmin } from '../api/request'
+
 const status = ref('pending')
 const list = ref([])
+
 async function load() {
   list.value = await callAdmin('listPosts', { status: status.value })
 }
+
 async function audit(id, s) {
   await callAdmin('auditPost', { id, status: s })
   load()
 }
-async function remove(id) { await callAdmin('deletePost', { id }); load() }
+
+async function remove(id) {
+  await callAdmin('deletePost', { id })
+  load()
+}
+
 onMounted(load)
 </script>
+
+<style scoped>
+.status-tabs {
+  margin: 16px 0 20px;
+}
+</style>

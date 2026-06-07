@@ -1,10 +1,10 @@
 <template>
-  <div>
-    <div class="toolbar">
-      <h2>官方病害库</h2>
+  <div class="page-panel">
+    <div class="page-toolbar">
+      <h2 class="page-title">官方病害库</h2>
       <el-button type="primary" @click="openDialog()">新增病害</el-button>
     </div>
-    <el-table :data="list" border>
+    <el-table :data="list">
       <el-table-column prop="nameCn" label="病害名称" />
       <el-table-column prop="cropCn" label="作物" width="100" />
       <el-table-column prop="diseaseKey" label="模型Key" width="220" />
@@ -54,7 +54,3 @@ async function save() {
 async function remove(id) { await callAdmin('deleteDisease', { id }); load() }
 onMounted(load)
 </script>
-
-<style scoped>
-.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-</style>

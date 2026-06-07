@@ -3,10 +3,11 @@
 ## 架构
 
 ```
-微信小程序 → 云函数 api（业务逻辑 + DeepSeek）
+微信小程序 → 云函数 api（业务逻辑 + DeepSeek AI 问诊）
           → 云数据库（NoSQL）
           → 云存储（图片）
-          → 云托管 ai-service（MOCK 识别，可选）
+          → 云托管 ai-service（NFNet-F1 真实识别，推荐）
+            或 HuggingFace Inference API（轻量备选）
 
 Vue 管理后台 → 云函数 admin（HTTP 访问）
 ```
@@ -101,54 +102,143 @@ miniprogram/cloudfunctions/install-deps.bat
 
 ### 云函数环境变量（api）
 
-在云开发控制台 → 云函数 → api → 版本与配置 → 环境变量：
+在云开发控制台 → 云函数 → api → 版本与配置 → 环境变量。
 
-| 变量 | 值 | 说明 |
-|------|-----|------|
-| `MOCK_DETECT` | `true` | `true`=云函数内模拟识别；`false`=调云托管 |
-| `DEEPSEEK_API_KEY` | 你的 Key | 不配则用模拟诊断/问答 |
-| `CLOUD_RUN_SERVICE` | `ai-service` | 云托管服务名 |
+参考模板：`miniprogram/cloudfunctions/api/env.example.json`
 
-## 五、部署云托管（可选）
+#### 识别（NFNet-F1）
 
-默认 `MOCK_DETECT=true` 时**无需部署云托管**即可演示识别。
+| 变量 | 推荐值 | 说明 |
+|------|--------|------|
+| `MOCK_DETECT` | `false` | `true`=本地模拟；`false`=真实识别 |
+| `INFERENCE_MODE` | `cloud_run` | `cloud_run`=云托管推理；`hf_api`=HuggingFace API |
+| `CLOUD_RUN_SERVICE` | `ai-service` | 云托管服务名（`cloud_run` 模式） |
+| `HF_API_TOKEN` | 你的 HF Token | `hf_api` 模式必填，在 [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) 申请 |
+| `HF_MODEL_ID` | `Arko007/nfnet-f1-plant-disease` | 模型 ID，一般无需修改 |
 
-若要使用云托管 MOCK 服务：
+#### AI 问诊（大模型）
 
-```bash
-cd cloudcontainer
-# 本地测试
-pip install -r requirements.txt
-python app.py
+**推荐做法**：编辑 `cloudfunctions/api/lib/llm-config.js`（随代码上传，线上一定生效）：
+
+```javascript
+module.exports = {
+  MOCK_AI: 'false',
+  DEEPSEEK_API_KEY: '你的Key',
+  LLM_API_BASE: 'https://tokenhub.tencentmaas.com/v1',
+  LLM_MODEL: 'deepseek-v4-pro'
+}
 ```
 
-在微信开发者工具 → 云开发 → 云托管 → 新建服务 `ai-service`：
+也可在云开发控制台 → 云函数 `api` → 环境变量中配置（见 `config.cloud.json`）。
 
-1. 上传 `cloudcontainer` 目录或构建 Docker 镜像
-2. 端口：**80**
-3. 规格：0.5核1G 即可（MOCK 版）
-4. 部署后将 `api` 云函数环境变量 `MOCK_DETECT` 改为 `false`
+| 变量 | 推荐值 | 说明 |
+|------|--------|------|
+| `LLM_API_BASE` | `https://tokenhub.tencentmaas.com/v1` | 大模型 API 根地址（OpenAI 兼容） |
+| `DEEPSEEK_API_KEY` | 你的 Key | 平台颁发的 API Key |
+| `LLM_MODEL` | `deepseek-v4-pro` | 模型名称，按平台文档填写 |
+| `MOCK_AI` | `false` | 仅 `true` 时强制模拟；缺 Key 会直接报错而非静默 mock |
+
+> 配置优先级：**llm-config.js** > 云控制台环境变量 > config.json  
+> 云函数超时已设为 **60 秒**（大模型响应约 7–20 秒）
+
+**修改后必须**：右键 `cloudfunctions/api` → **上传并部署：所有文件**
+
+**自检**：云函数测试 `{ "action": "aiHealth" }`，期望 `mode: "llm"` 且 `connected: true`。
+
+#### 开发调试（无 Key / 未部署模型时）
+
+| 变量 | 值 |
+|------|-----|
+| `MOCK_DETECT` | `true` |
+| `MOCK_AI` | `true` |
+
+## 五、部署真实识别服务（NFNet-F1）
+
+模型来源：[Arko007/nfnet-f1-plant-disease](https://huggingface.co/Arko007/nfnet-f1-plant-disease)（NFNet-F1，88 类作物病害分类）。
+
+### 方案 A：云托管自部署（推荐，稳定）
+
+**完整步骤见：[DEPLOY-cloudrun.md](./DEPLOY-cloudrun.md)**
+
+快速流程：
+
+```bat
+cloudcontainer\deploy-cloudcontainer.bat
+```
+
+1. 上传生成的 `cloudcontainer/ai-service.zip` 到云托管服务 `ai-service`
+2. 端口 **80**，规格 **2核4G**，环境变量 `MOCK_MODE=false`
+3. 全量发布版本，确认 `/health` 返回 `model_ready: true`
+4. 云函数 `api` 环境变量：`MOCK_DETECT=false`、`INFERENCE_MODE=cloud_run`
+5. 重新上传部署云函数 `api`
+6. 云函数测试 `{ "action": "detectHealth" }` 验证联调
+
+### 方案 B：HuggingFace Inference API（轻量，无需自建模型服务）
+
+适合无法部署大镜像的场景：
+
+1. 在 HuggingFace 申请 `HF_API_TOKEN`
+2. 云函数环境变量：
+   - `MOCK_DETECT=false`
+   - `INFERENCE_MODE=hf_api`
+   - `HF_API_TOKEN=你的Token`
+
+> 免费 API 有冷启动与速率限制，生产环境建议用方案 A。
 
 ## 六、管理后台
 
-### 开启 admin 云函数 HTTP 访问
+### 开启 admin 的 HTTP 访问（新版 CloudBase 控制台）
 
-云开发控制台 → 云函数 → `admin` → **HTTP 访问服务** → 开启
+你截图里 **「HTTP API」** 标签下的 curl **就是正确方式**，与旧版「HTTP 访问服务」不同。
 
-复制 HTTP 访问路径，例如：
-`https://xxxx.service.tcloudbase.com/admin`
+#### 第 1 步：获取 API Key
 
-### 启动管理后台
+云开发控制台 → **环境配置** → **API Key 管理** → **创建 ApiKey**  
+复制生成的 Key（仅服务端使用，不要提交到 Git）。
+
+#### 第 2 步：确认 admin 云函数地址
+
+在 **函数管理** → 右侧 **HTTP API** 标签，把示例里的 `:name` 换成 **`admin`**：
+
+```text
+https://cloud1-d1gkunv290a5dc6f4.api.tcloudbasegateway.com/v1/functions/admin
+```
+
+（环境 ID 以你控制台显示的为准。）
+
+#### 第 3 步：用 curl 测试登录
+
+```bash
+curl -L "https://cloud1-d1gkunv290a5dc6f4.api.tcloudbasegateway.com/v1/functions/admin" ^
+  -H "Content-Type: application/json" ^
+  -H "Accept: application/json" ^
+  -H "Authorization: Bearer 你的ApiKey" ^
+  -d "{\"action\":\"login\",\"data\":{\"username\":\"admin\",\"password\":\"admin123\"}}"
+```
+
+注意：
+
+- `Authorization` 里填的是 **CloudBase API Key**，不是管理后台登录后的 token
+- `-d` 里不能是空 `{}`，要按 admin 云函数格式传 `action` 和 `data`
+
+#### 第 4 步：配置管理后台
+
+复制 `admin-web/.env.example` 为 `.env.local` 并填写：
+
+```env
+VITE_CLOUD_HTTP_BASE=https://cloud1-d1gkunv290a5dc6f4.api.tcloudbasegateway.com/v1/functions/admin
+VITE_CLOUD_API_KEY=你的ApiKey
+```
 
 ```bash
 cd admin-web
 npm install
-# 创建 .env.local
-echo VITE_CLOUD_HTTP_BASE=https://你的admin云函数HTTP地址 > .env.local
 npm run dev
 ```
 
-访问 http://localhost:5173，账号 `admin` / `admin123`
+访问 http://localhost:5173 ，账号 `admin` / `admin123`
+
+> 「小程序 / Web / 云函数」标签是 SDK 调用方式；管理后台网页应使用 **HTTP API** 这一栏的地址。
 
 ## 七、小程序调试
 
@@ -160,8 +250,8 @@ npm run dev
 ### 演示流程
 
 1. 首页 → 查看 Banner、病害推荐、资讯
-2. 识别 → 选作物 → 拍照 → 开始识别（MOCK 返回结果）
-3. 结果页 → 立即智能诊断（DeepSeek 或模拟）
+2. 识别 → 选作物 → 拍照 → 开始识别（NFNet-F1 或 MOCK）
+3. 结果页 → 立即智能诊断（配置 `DEEPSEEK_API_KEY` 后走真实 AI）
 4. 诊断页 → AI 问诊聊天
 5. 社区 → 发帖（待审核）→ 管理后台审核通过
 6. 我的 → 诊断历史
@@ -181,6 +271,6 @@ miniprogram/
   cloudfunctions/init-db/ # 数据初始化
   cloudfunctions/cron-news/
   pages/                  # 已改为 callApi 调用
-cloudcontainer/           # 云托管 MOCK 识别服务
+cloudcontainer/           # 云托管 NFNet-F1 识别服务
 admin-web/                # 已改为 callAdmin 调用
 ```

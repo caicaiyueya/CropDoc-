@@ -12,6 +12,9 @@
     <!-- 病害信息 -->
     <view class="section-card">
       <text class="disease-name">{{result.diseaseCn}}</text>
+      <view class="inference-tag {{result.inferenceMock ? 'inference-tag--mock' : 'inference-tag--real'}}">
+        {{result.inferenceMock ? '模拟识别' : 'NFNet-F1 识别'}}
+      </view>
       <view class="disease-meta">
         <text class="disease-meta-label">病害等级：</text>
         <text class="level-tag level-tag--{{levelClass}}">{{result.level}}</text>
@@ -33,7 +36,8 @@
         <view class="compare-col">
           <text class="compare-label">标准病害图</text>
           <view class="compare-frame">
-            <image wx:if="{{result.standardImageUrl}}" class="compare-img" src="{{result.standardImageUrl}}" mode="aspectFit" />
+            <image wx:if="{{standardImageUrl}}" class="compare-img" src="{{standardImageUrl}}" mode="aspectFit" />
+            <image wx:elif="{{result.standardImageUrl && result.standardImageUrl.startsWith('http')}}" class="compare-img" src="{{result.standardImageUrl}}" mode="aspectFit" />
             <view wx:else class="compare-empty">暂无官方标准图</view>
           </view>
         </view>

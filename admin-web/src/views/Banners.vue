@@ -1,10 +1,10 @@
 <template>
-  <div>
-    <div class="toolbar">
-      <h2>轮播公告</h2>
+  <div class="page-panel">
+    <div class="page-toolbar">
+      <h2 class="page-title">轮播公告</h2>
       <el-button type="primary" @click="openDialog()">新增</el-button>
     </div>
-    <el-table :data="list" border>
+    <el-table :data="list">
       <el-table-column prop="title" label="标题" />
       <el-table-column prop="imageUrl" label="图片" />
       <el-table-column prop="sortOrder" label="排序" width="80" />
@@ -52,7 +52,3 @@ async function save() {
 async function remove(id) { await callAdmin('deleteBanner', { id }); load() }
 onMounted(load)
 </script>
-
-<style scoped>
-.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-</style>

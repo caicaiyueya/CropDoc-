@@ -268,7 +268,23 @@ async function patchOfficialMedia() {
   return `media patched: ${patched}`
 }
 
-exports.main = async () => {
+exports.main = async (event = {}) => {
+  let payload = event
+  if (event.body) {
+    payload = typeof event.body === 'string' ? JSON.parse(event.body) : event.body
+  }
+
+  const action = payload.action
+
+  if (action === 'purgeUserHistory') {
+    const { purgeUserHistory } = require('./lib/purge-user')
+    const data = await purgeUserHistory(db, {
+      nickname: payload.nickname,
+      openidSuffix: payload.openidSuffix
+    })
+    return { code: data.ok ? 200 : 404, message: data.message, data }
+  }
+
   const results = []
 
   const created = await ensureCollections(db)

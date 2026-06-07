@@ -1,10 +1,10 @@
 <template>
-  <div>
-    <div class="toolbar">
-      <h2>农业资讯</h2>
+  <div class="page-panel">
+    <div class="page-toolbar">
+      <h2 class="page-title">农业资讯</h2>
       <el-button type="primary" @click="openDialog()">发布资讯</el-button>
     </div>
-    <el-table :data="list" border>
+    <el-table :data="list">
       <el-table-column prop="title" label="标题" />
       <el-table-column prop="source" label="来源" width="120" />
       <el-table-column prop="status" label="状态" width="100" />
@@ -51,7 +51,3 @@ async function save() {
 async function remove(id) { await callAdmin('deleteNews', { id }); load() }
 onMounted(load)
 </script>
-
-<style scoped>
-.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-</style>

@@ -1,5 +1,7 @@
 module.exports = {
-  // 云环境 ID：留空则使用微信开发者工具中当前选中的默认云环境
-  // 也可填写具体 ID，例如 cloud1-abc123
-  cloudEnvId: ''
+  // 云开发环境 ID
+  cloudEnvId: 'cloud1-d1gkunv290a5dc6f4',
+  // 云托管环境 ID（与 cloud1-xxx 不同，用于 wx.cloud.callContainer）
+  cloudRunEnv: 'ai-service-d9ghejjuh34c4b577',
+  cloudRunService: 'ai-service'
 }

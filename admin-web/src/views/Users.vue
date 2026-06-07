@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <h2>用户管理</h2>
-    <el-table :data="list" border style="margin-top:16px">
+  <div class="page-panel">
+    <h2 class="page-title">用户管理</h2>
+    <el-table :data="list" class="user-table">
       <el-table-column prop="_id" label="ID" width="220" />
       <el-table-column prop="nickname" label="昵称" />
       <el-table-column prop="phone" label="手机号" />
@@ -19,11 +19,23 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { callAdmin } from '../api/request'
+
 const list = ref([])
-async function load() { list.value = await callAdmin('listUsers') }
+
+async function load() {
+  list.value = await callAdmin('listUsers')
+}
+
 async function setStatus(id, status) {
   await callAdmin('updateUserStatus', { id, status })
   load()
 }
+
 onMounted(load)
 </script>
+
+<style scoped>
+.user-table {
+  margin-top: 20px;
+}
+</style>

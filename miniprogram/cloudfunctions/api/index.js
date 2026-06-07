@@ -1,10 +1,32 @@
 const cloud = require('./lib/cloud')
+const { callAiService, setRuntimeContext, resolveHttpBaseUrl, SETUP_HINT } = require('./lib/container')
 const diseaseLib = require('./lib/disease')
 const deepseek = require('./lib/deepseek')
+const { getAiConfigSummary, getDetectConfigSummary, getLlmApiKey, getCloudRunService, getInferenceMode, isMockDetect, isMockAi } = require('./lib/env')
+const huggingface = require('./lib/huggingface')
 const { ensureCollections } = require('./lib/db')
+const { getStandardImageUrl } = require('./lib/standard-images')
 
 function ok(data) { return { code: 200, message: 'success', data } }
 function fail(message, code = 500) { return { code, message, data: null } }
+
+function parseContainerResponse(res, actionLabel) {
+  if (!res) throw new Error(`${actionLabel}：云托管无响应`)
+  const statusCode = res.statusCode || res.status || 0
+  let body = res.data
+  if (Buffer.isBuffer(body)) body = body.toString('utf8')
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body) } catch (e) { /* keep raw string */ }
+  }
+  if (statusCode >= 400) {
+    const detail = body?.detail
+      || body?.message
+      || (body?.code ? `${body.code}: ${body.message || ''}` : '')
+      || (typeof body === 'string' ? body : JSON.stringify(body))
+    throw new Error(`${actionLabel}(${statusCode}): ${detail}`)
+  }
+  return body
+}
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
@@ -16,7 +38,8 @@ const QUICK_MENUS = [
   { icon: '📋', name: '诊断记录', path: '/pages/profile/history' }
 ]
 
-exports.main = async (event) => {
+exports.main = async (event, context) => {
+  setRuntimeContext(context)
   const { action, data = {} } = event
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
@@ -28,6 +51,10 @@ exports.main = async (event) => {
       case 'home': return await home()
       case 'crops': return ok(diseaseLib.getCrops())
       case 'detect': return await detect(openid, data)
+      case 'detectConfig': return detectConfig()
+      case 'detectHealth': return await detectHealth()
+      case 'aiHealth': return await aiHealth()
+      case 'configStatus': return configStatus()
       case 'diagnose': return await diagnose(openid, data)
       case 'chatSend': return await chatSend(openid, data)
       case 'getProfile': return await getProfile(openid)
@@ -97,26 +124,97 @@ async function home() {
   })
 }
 
-async function predictImage(fileID, crop) {
-  const mockDetect = process.env.MOCK_DETECT !== 'false'
-  if (mockDetect) {
-    return diseaseLib.mockPredict(crop)
+async function predictImage(fileID, crop, clientAi) {
+  if (clientAi && clientAi.disease_key) {
+    return {
+      disease_key: clientAi.disease_key,
+      confidence: clientAi.confidence,
+      mock: clientAi.mock === true,
+      model: clientAi.model
+    }
   }
+
+  if (isMockDetect()) {
+    const mock = diseaseLib.mockPredict(crop)
+    return { ...mock, mock: true }
+  }
+
+  const mode = getInferenceMode()
+
+  if (mode === 'hf_api') {
+    const result = await huggingface.predictImage(fileID, crop, process.env.HF_API_TOKEN)
+    return { ...result, mock: false }
+  }
+
+  if (mode !== 'cloud_run') {
+    throw new Error(`不支持的识别模式: ${mode}`)
+  }
+
   const urlRes = await cloud.getTempFileURL({ fileList: [fileID] })
-  const imageUrl = urlRes.fileList[0].tempFileURL
-  const service = process.env.CLOUD_RUN_SERVICE || 'ai-service'
-  const res = await cloud.callContainer({
+  const fileItem = urlRes.fileList && urlRes.fileList[0]
+  const imageUrl = fileItem && fileItem.tempFileURL
+  if (!imageUrl) {
+    const errMsg = fileItem && fileItem.errMsg ? fileItem.errMsg : '无法获取图片临时访问地址'
+    throw new Error(errMsg)
+  }
+
+  const res = await callAiService({
     path: '/predict',
     method: 'POST',
-    header: { 'X-WX-SERVICE': service, 'content-type': 'application/json' },
-    data: { image_url: imageUrl, crop }
+    data: { image_url: imageUrl, crop },
+    timeout: 55000
   })
-  const body = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
-  return body
+  const body = parseContainerResponse(res, '识别服务')
+  if (!body?.disease_key) {
+    throw new Error(body?.detail || body?.message || '识别服务返回异常')
+  }
+  return { ...body, mock: body.mock === true }
 }
 
-async function detect(openid, { crop, fileID }) {
-  const ai = await predictImage(fileID, crop)
+function detectConfig() {
+  const summary = getDetectConfigSummary()
+  const httpBase = resolveHttpBaseUrl()
+  return ok({
+    ...summary,
+    httpBaseConfigured: !!httpBase,
+    httpBasePreview: httpBase ? httpBase.replace(/^https?:\/\//, '').slice(0, 40) : '',
+    setupHint: httpBase ? '' : SETUP_HINT
+  })
+}
+
+async function detectHealth() {
+  const config = getDetectConfigSummary()
+  if (config.mockDetect) {
+    return ok({
+      ...config,
+      mode: 'mock',
+      message: 'MOCK_DETECT=true，当前为云函数内模拟识别',
+      hint: '将 cloud-config.js 中 MOCK_DETECT 设为 false 并重新上传 api 云函数'
+    })
+  }
+
+  const mode = getInferenceMode()
+  if (mode === 'hf_api') {
+    return ok({
+      ...config,
+      mode: 'hf_api',
+      model: process.env.HF_MODEL_ID || 'Arko007/nfnet-f1-plant-disease',
+      tokenConfigured: !!process.env.HF_API_TOKEN
+    })
+  }
+
+  const res = await callAiService({ path: '/health', method: 'GET' })
+  const health = parseContainerResponse(res, '健康检查')
+  return ok({
+    ...config,
+    mode: 'cloud_run',
+    service: getCloudRunService(),
+    health
+  })
+}
+
+async function detect(openid, { crop, fileID, clientAi }) {
+  const ai = await predictImage(fileID, crop, clientAi)
   const resolved = diseaseLib.resolve(ai.disease_key)
   const confidence = ai.confidence || 0.75
   const level = diseaseLib.levelOf(confidence)
@@ -138,6 +236,9 @@ async function detect(openid, { crop, fileID }) {
 
   const official = await db.collection('diseases').where({ diseaseKey: ai.disease_key }).limit(1).get()
   const officialDisease = official.data[0] || null
+  const standardImageUrl = (officialDisease && officialDisease.standardImageUrl)
+    || getStandardImageUrl(ai.disease_key)
+    || ''
 
   return ok({
     ...resolved,
@@ -145,9 +246,48 @@ async function detect(openid, { crop, fileID }) {
     level,
     detectId: addRes._id,
     userImage: fileID,
-    standardImageUrl: officialDisease ? officialDisease.standardImageUrl : '',
-    officialDisease
+    standardImageUrl,
+    officialDisease,
+    inferenceMock: ai.mock === true,
+    inferenceModel: ai.mock ? 'mock' : (ai.model || 'Arko007/nfnet-f1-plant-disease')
   })
+}
+
+function configStatus() {
+  return ok({
+    detect: getDetectConfigSummary(),
+    ai: getAiConfigSummary(),
+    hint: '若 mockDetect/mockAi 为 true，请确认已上传 lib/cloud-config.js 并重新部署 api 云函数（所有文件）'
+  })
+}
+
+async function aiHealth() {
+  const summary = getAiConfigSummary()
+  if (summary.mockAi) {
+    return ok({
+      ...summary,
+      mode: 'mock',
+      message: 'MOCK_AI=true，当前为模拟问诊',
+      hint: '将 llm-config.js 或云控制台 MOCK_AI 设为 false'
+    })
+  }
+  if (!summary.apiKeyConfigured) {
+    return fail('未配置 DEEPSEEK_API_KEY，请编辑 lib/cloud-config.js 后重新上传 api 云函数', 500)
+  }
+
+  try {
+    const reply = await deepseek.chat([
+      { role: 'user', content: '请只回复：连通成功' }
+    ], getLlmApiKey())
+    return ok({
+      ...summary,
+      mode: 'llm',
+      connected: true,
+      sample: String(reply).slice(0, 120)
+    })
+  } catch (e) {
+    return fail(`大模型连通失败: ${e.message}`, 500)
+  }
 }
 
 async function diagnose(openid, { detectId }) {
@@ -155,11 +295,12 @@ async function diagnose(openid, { detectId }) {
   const detect = rec.data
   if (!detect || detect.openid !== openid) return fail('识别记录不存在', 404)
 
+  const apiKey = getLlmApiKey()
   const result = await deepseek.autoDiagnose(
     detect.cropCn,
     detect.diseaseName,
     detect.confidence,
-    process.env.DEEPSEEK_API_KEY
+    apiKey
   )
 
   await db.collection('diagnose_records').add({
@@ -167,9 +308,11 @@ async function diagnose(openid, { detectId }) {
       openid,
       detectId,
       result,
+      aiMock: !!result._mock,
       createdAt: db.serverDate()
     }
   })
+  if (result._mock) delete result._mock
   return ok(result)
 }
 
@@ -194,7 +337,8 @@ async function chatSend(openid, { sessionId, message }) {
   const messages = [{ role: 'system', content: '你是云农智诊农业助手，请用简洁专业的语言回答农户问题，并声明建议仅供参考。' }]
   history.data.forEach(m => messages.push({ role: m.role, content: m.content }))
 
-  const reply = await deepseek.chat(messages, process.env.DEEPSEEK_API_KEY)
+  const apiKey = getLlmApiKey()
+  const reply = await deepseek.chat(messages, apiKey)
 
   await db.collection('chat_messages').add({
     data: { sessionId: sid, role: 'assistant', content: reply, createdAt: db.serverDate() }

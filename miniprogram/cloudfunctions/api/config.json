@@ -2,9 +2,15 @@
   "permissions": {
     "openapi": []
   },
+  "timeout": 60,
   "env": {
-    "DEEPSEEK_API_KEY": "",
+    "TCB_ENV": "cloud1-d1gkunv290a5dc6f4",
+    "CLOUD_RUN_ENV": "ai-service-d9ghejjuh34c4b577",
+    "MOCK_DETECT": "false",
+    "INFERENCE_MODE": "cloud_run",
+    "HF_MODEL_ID": "Arko007/nfnet-f1-plant-disease",
+    "HF_API_TOKEN": "",
     "CLOUD_RUN_SERVICE": "ai-service",
-    "MOCK_DETECT": "true"
+    "MOCK_AI": "false"
   }
 }

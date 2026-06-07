@@ -38,6 +38,7 @@ async function handleRequest(payload) {
       case 'deletePost': return await deleteDoc('posts', data.id)
       case 'listUsers': return ok((await db.collection('users').orderBy('createdAt', 'desc').get()).data)
       case 'updateUserStatus': return await updateUserStatus(data)
+      case 'purgeUserHistory': return await purgeUserHistoryAction(data)
       default: return fail('未知操作')
   }
 }
@@ -70,18 +71,52 @@ exports.main = async (event) => {
   }
 }
 
+function buildTrend(current, previous) {
+  if (!previous) {
+    return { text: current ? '新增长' : '—', dir: current ? 'up' : 'flat' }
+  }
+  const pct = Math.round(((current - previous) / previous) * 100)
+  return {
+    text: `${pct >= 0 ? '+' : ''}${pct}%`,
+    dir: pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat'
+  }
+}
+
 async function dashboard() {
-  const [users, detects, pending, news] = await Promise.all([
+  const _ = db.command
+  const weekStart = new Date()
+  weekStart.setDate(weekStart.getDate() - 7)
+  weekStart.setHours(0, 0, 0, 0)
+  const prevWeekStart = new Date(weekStart)
+  prevWeekStart.setDate(prevWeekStart.getDate() - 7)
+  const thisWeek = _.gte(weekStart)
+  const prevWeek = _.and(_.gte(prevWeekStart), _.lt(weekStart))
+
+  const [
+    users, detects, pending, news,
+    usersThisWeek, usersPrevWeek,
+    detectsThisWeek, detectsPrevWeek
+  ] = await Promise.all([
     db.collection('users').count(),
     db.collection('detect_records').count(),
     db.collection('posts').where({ status: 'pending' }).count(),
-    db.collection('news').count()
+    db.collection('news').count(),
+    db.collection('users').where({ createdAt: thisWeek }).count(),
+    db.collection('users').where({ createdAt: prevWeek }).count(),
+    db.collection('detect_records').where({ createdAt: thisWeek }).count(),
+    db.collection('detect_records').where({ createdAt: prevWeek }).count()
   ])
+
   return ok({
     userCount: users.total,
+    detectCount: detects.total,
     todayDetectCount: detects.total,
     pendingPostCount: pending.total,
-    newsCount: news.total
+    newsCount: news.total,
+    trends: {
+      users: buildTrend(usersThisWeek.total, usersPrevWeek.total),
+      detects: buildTrend(detectsThisWeek.total, detectsPrevWeek.total)
+    }
   })
 }
 
@@ -111,4 +146,11 @@ async function auditPost({ id, status, pinned }) {
 async function updateUserStatus({ id, status }) {
   await db.collection('users').doc(id).update({ data: { status } })
   return ok()
+}
+
+async function purgeUserHistoryAction(data = {}) {
+  const { purgeUserHistory } = require('./lib/purge-user')
+  const result = await purgeUserHistory(db, data)
+  if (!result.ok) return fail(result.message, 404)
+  return ok(result)
 }

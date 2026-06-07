@@ -1,3 +1,8 @@
-fastapi==0.111.0
-uvicorn==0.29.0
+# torch / numpy 由 Dockerfile 先行安装，此处不再重复
+fastapi>=0.104.0
+uvicorn>=0.24.0
 requests>=2.31.0
+safetensors>=0.4.3
+huggingface_hub>=0.23.0
+Pillow>=10.3.0
+timm==1.0.3

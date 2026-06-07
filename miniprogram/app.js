@@ -22,13 +22,16 @@ App({
     if (user) this.globalData.user = user
 
     const { login } = require('./utils/request')
-    // 先初始化数据库，再登录
-    wx.cloud.callFunction({ name: 'init-db' })
+    // 先初始化数据库，再登录（init-db 冷启动可能较慢，避免默认 3s 客户端超时）
+    wx.cloud.callFunction({ name: 'init-db', config: { timeout: 60000 } })
       .then(() => login())
       .catch(err => {
         console.warn('初始化或登录失败，请重新上传云函数（所有文件）', err)
-        wx.cloud.callFunction({ name: 'api', data: { action: 'setup' } })
-          .finally(() => login().catch(() => {}))
+        wx.cloud.callFunction({
+          name: 'api',
+          data: { action: 'setup' },
+          config: { timeout: 60000 }
+        }).finally(() => login().catch(() => {}))
       })
   }
 })

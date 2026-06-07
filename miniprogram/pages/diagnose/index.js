@@ -118,16 +118,19 @@ Page({
   async startAutoDiagnose(detectId) {
     this.setData({ thinking: true, lastProcessedDetectId: detectId })
     this.scrollToBottom('msg-thinking')
+    wx.showLoading({ title: 'AI 分析中…', mask: true })
     try {
-      const result = await callApi('diagnose', { detectId })
+      const result = await callApi('diagnose', { detectId }, { timeout: 60000 })
       const messages = this.data.messages.concat([
         createMessage('assistant', formatDiagnoseResult(result))
       ])
       this.setData({ messages })
       this.scrollToBottom(`msg-${messages.length - 1}`)
     } catch (e) {
-      wx.showToast({ title: '自动诊断失败', icon: 'none' })
+      const msg = (e && e.errMsg) || (e && e.message) || '自动诊断失败'
+      wx.showToast({ title: msg, icon: 'none', duration: 4000 })
     } finally {
+      wx.hideLoading()
       this.setData({ thinking: false })
     }
   },
@@ -147,8 +150,9 @@ Page({
     })
     this.scrollToBottom(`msg-${userIndex}`)
 
+    wx.showLoading({ title: 'AI 思考中…', mask: true })
     try {
-      const data = await callApi('chatSend', { sessionId: this.data.sessionId, message: msg })
+      const data = await callApi('chatSend', { sessionId: this.data.sessionId, message: msg }, { timeout: 60000 })
       messages[userIndex].sent = true
       const next = messages.concat([createMessage('assistant', data.reply)])
       this.setData({
@@ -159,7 +163,10 @@ Page({
       this.scrollToBottom(`msg-${next.length - 1}`)
     } catch (e) {
       this.setData({ thinking: false })
-      wx.showToast({ title: '发送失败', icon: 'none' })
+      const errMsg = (e && e.errMsg) || (e && e.message) || '发送失败'
+      wx.showToast({ title: errMsg, icon: 'none', duration: 4000 })
+    } finally {
+      wx.hideLoading()
     }
   }
 })

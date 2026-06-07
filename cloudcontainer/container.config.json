@@ -1,0 +1,21 @@
+{
+  "containerPort": 80,
+  "dockerfilePath": "Dockerfile",
+  "buildDir": "",
+  "minNum": 1,
+  "maxNum": 3,
+  "cpu": 2,
+  "mem": 4,
+  "policyType": "cpu",
+  "policyThreshold": 70,
+  "envParams": {
+    "MOCK_MODE": "false",
+    "TORCH_NUM_THREADS": "2",
+    "HF_MODEL_ID": "Arko007/nfnet-f1-plant-disease",
+    "HF_ENDPOINT": "https://hf-mirror.com"
+  },
+  "customLogs": "stdout",
+  "initialDelaySeconds": 600,
+  "dataBaseName": "",
+  "executeSQLs": []
+}

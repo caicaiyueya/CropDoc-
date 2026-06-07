@@ -1,0 +1,11 @@
+{
+  "_comment": "云端 api 云函数环境变量（复制到云开发控制台，非 config.json）",
+  "MOCK_DETECT": "false",
+  "INFERENCE_MODE": "cloud_run",
+  "CLOUD_RUN_SERVICE": "ai-service",
+  "HF_MODEL_ID": "Arko007/nfnet-f1-plant-disease",
+  "LLM_API_BASE": "https://tokenhub.tencentmaas.com/v1",
+  "DEEPSEEK_API_KEY": "sk-xxxxxxxx",
+  "LLM_MODEL": "deepseek-v4-pro",
+  "MOCK_AI": "false"
+}

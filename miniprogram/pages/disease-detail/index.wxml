@@ -1,0 +1,23 @@
+<view class="sub-page">
+  <sub-page-header
+    tier="secondary"
+    title="病害详情"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+  <scroll-view class="sub-page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="page-body" wx:if="{{disease}}">
+      <view class="detail-card section-card">
+        <text class="detail-title">{{disease.nameCn}}</text>
+        <text class="detail-meta">作物：{{disease.cropCn}}</text>
+        <text class="section-heading">症状描述</text>
+        <text class="detail-content">{{disease.symptoms}}</text>
+        <text class="section-heading">防治方法</text>
+        <text class="detail-content">{{disease.treatment}}</text>
+        <text class="section-heading">详细说明</text>
+        <text class="detail-content">{{disease.description}}</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

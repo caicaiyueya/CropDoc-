@@ -1,0 +1,87 @@
+<view class="detail-page">
+  <sub-page-header
+    tier="secondary"
+    title="帖子详情"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+
+  <scroll-view class="detail-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view wx:if="{{post}}" class="post-card section-card">
+      <view class="post-head">
+        <text class="post-title">{{post.title}}</text>
+        <view class="post-tags">
+          <text wx:if="{{post.isOfficial}}" class="tag-official">官方</text>
+          <text wx:if="{{post.postType === 'science'}}" class="tag-science">科普</text>
+        </view>
+      </view>
+      <view class="author-row">
+        <text class="author-name">{{post.nickname}}</text>
+      </view>
+
+      <view wx:if="{{post.coverUrl}}" class="post-cover">
+        <image class="post-cover-img" src="{{post.coverUrl}}" mode="widthFix" />
+      </view>
+
+      <view class="content-blocks">
+        <block wx:for="{{contentBlocks}}" wx:key="index">
+          <text wx:if="{{item.type === 'heading'}}" class="content-heading">{{item.text}}</text>
+          <text wx:elif="{{item.type === 'list'}}" class="content-list">{{item.text}}</text>
+          <text wx:else class="content-text">{{item.text}}</text>
+        </block>
+      </view>
+
+      <view
+        class="favorite-btn {{post.favorited ? 'favorite-btn--active' : ''}}"
+        bindtap="toggleFavorite"
+        hover-class="favorite-btn--press"
+        hover-stay-time="120"
+      >
+        <text class="favorite-btn-icon">{{post.favorited ? '★' : '☆'}}</text>
+        <text>{{post.favorited ? '已收藏' : '收藏'}}</text>
+      </view>
+    </view>
+
+    <view class="section-title-block">评论</view>
+
+    <view wx:if="{{!comments.length}}" class="comment-empty">暂无评论，快来抢沙发吧</view>
+
+    <view class="comment-list">
+      <view class="comment-row" wx:for="{{comments}}" wx:key="_id">
+        <view class="comment-avatar">🌾</view>
+        <view class="comment-main {{item.isSelf ? 'comment-main--self' : 'comment-main--other'}}">
+          <text class="comment-author">{{item.nickname}}</text>
+          <view class="comment-bubble {{item.isSelf ? 'comment-bubble--self' : 'comment-bubble--other'}}">
+            <text user-select>{{item.content}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="scroll-bottom" style="height: {{inputBarHeight}}px;"></view>
+  </scroll-view>
+
+  <view class="input-panel" style="padding-bottom: {{safeBottom}}px;">
+    <view class="input-card">
+      <input
+        class="comment-input"
+        placeholder="写下你的评论..."
+        placeholder-class="input-placeholder"
+        value="{{comment}}"
+        bindinput="onCommentInput"
+        confirm-type="send"
+        bindconfirm="submitComment"
+        cursor-spacing="24"
+      />
+      <view
+        class="send-btn {{canSend ? '' : 'send-btn--disabled'}}"
+        bindtap="submitComment"
+        hover-class="{{canSend ? 'send-btn--press' : ''}}"
+        hover-stay-time="120"
+      >
+        发送
+      </view>
+    </view>
+  </view>
+</view>

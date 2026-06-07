@@ -1,0 +1,41 @@
+<view class="sub-page">
+  <sub-page-header
+    tier="secondary"
+    title="意见反馈"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+  <scroll-view class="sub-page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="page-body">
+      <view class="form-card section-card">
+        <text class="field-label">反馈内容</text>
+        <textarea
+          class="field-textarea"
+          placeholder="请描述您的问题或建议..."
+          placeholder-class="field-placeholder"
+          value="{{content}}"
+          bindinput="onInput"
+          maxlength="-1"
+          auto-height
+        />
+        <text class="field-label">联系方式（选填）</text>
+        <input
+          class="field-input"
+          placeholder="手机号或微信号"
+          placeholder-class="field-placeholder"
+          value="{{contact}}"
+          bindinput="onContactInput"
+        />
+      </view>
+      <view
+        class="submit-btn {{canSubmit ? '' : 'submit-btn--disabled'}}"
+        bindtap="submit"
+        hover-class="{{canSubmit ? 'submit-btn--press' : ''}}"
+        hover-stay-time="120"
+      >
+        提交反馈
+      </view>
+    </view>
+  </scroll-view>
+</view>

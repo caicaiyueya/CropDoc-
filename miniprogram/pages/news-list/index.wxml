@@ -1,0 +1,33 @@
+<view class="sub-page">
+  <sub-page-header
+    tier="secondary"
+    title="农业资讯"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+  <scroll-view class="sub-page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+  <view class="news-page">
+  <view class="news-list">
+    <view
+      class="news-card"
+      wx:for="{{newsList}}"
+      wx:key="_id"
+      bindtap="goDetail"
+      data-id="{{item._id}}"
+    >
+      <text class="news-title">{{item.title}}</text>
+      <text class="news-summary">{{item.summary}}</text>
+      <view class="news-cover-wrap">
+        <image wx:if="{{item.coverUrl}}" class="news-cover" src="{{item.coverUrl}}" mode="aspectFill" />
+        <view wx:else class="news-cover news-cover--placeholder"><text>📰</text></view>
+      </view>
+      <text class="news-time">{{item.timeText}}</text>
+    </view>
+    <view wx:if="{{!loading && !newsList.length}}" class="empty">暂无资讯</view>
+    <view wx:if="{{loading}}" class="loading">加载中…</view>
+    <view wx:if="{{!hasMore && newsList.length}}" class="end-tip">— 已加载全部 —</view>
+  </view>
+  </view>
+  </scroll-view>
+</view>

@@ -1,0 +1,19 @@
+<view class="sub-page">
+  <sub-page-header
+    tier="secondary"
+    title="资讯详情"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+  <scroll-view class="sub-page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="page-body" wx:if="{{news}}">
+      <view class="detail-card section-card">
+        <text class="detail-title">{{news.title}}</text>
+        <text class="detail-meta">{{news.source}} · {{news.timeText}}</text>
+        <image wx:if="{{news.coverUrl || news.imageUrl}}" class="detail-cover" src="{{news.coverUrl || news.imageUrl}}" mode="widthFix" />
+        <text class="detail-content">{{news.content}}</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

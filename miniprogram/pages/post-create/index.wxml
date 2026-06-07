@@ -1,0 +1,65 @@
+<view class="create-page">
+  <sub-page-header
+    tier="secondary"
+    title="发布帖子"
+    titleSuffix="✏️"
+    variant="create"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+
+  <scroll-view class="create-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="page-body">
+      <view class="form-card section-card">
+        <text class="field-label">标题</text>
+        <input
+          class="field-input"
+          placeholder="请输入帖子标题"
+          placeholder-class="field-placeholder"
+          value="{{title}}"
+          bindinput="onTitleInput"
+          maxlength="60"
+        />
+
+        <text class="field-label">类型</text>
+        <view class="type-grid">
+          <view
+            class="type-tag {{postType === item.value ? 'type-tag--active' : ''}}"
+            wx:for="{{types}}"
+            wx:key="value"
+            bindtap="onTypeSelect"
+            data-value="{{item.value}}"
+            hover-class="type-tag--press"
+            hover-stay-time="120"
+          >
+            <text wx:if="{{postType === item.value}}" class="type-check">✓</text>
+            <text>{{item.label}}</text>
+          </view>
+        </view>
+
+        <text class="field-label">正文</text>
+        <textarea
+          class="field-textarea"
+          placeholder="分享你的种植经验或病害求助..."
+          placeholder-class="field-placeholder"
+          value="{{content}}"
+          bindinput="onContentInput"
+          maxlength="-1"
+          auto-height
+          show-confirm-bar="{{false}}"
+        />
+      </view>
+
+      <view
+        class="submit-btn {{canSubmit ? '' : 'submit-btn--disabled'}}"
+        bindtap="submit"
+        hover-class="{{canSubmit ? 'submit-btn--press' : ''}}"
+        hover-stay-time="120"
+      >
+        提交审核
+      </view>
+    </view>
+    <view class="page-bottom"></view>
+  </scroll-view>
+</view>

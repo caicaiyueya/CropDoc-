@@ -1,0 +1,55 @@
+<view class="result-page" wx:if="{{result}}">
+  <!-- 顶部导航 -->
+  <sub-page-header
+    tier="secondary"
+    title="识别结果"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+
+  <view class="page-body">
+    <!-- 病害信息 -->
+    <view class="section-card">
+      <text class="disease-name">{{result.diseaseCn}}</text>
+      <view class="disease-meta">
+        <text class="disease-meta-label">病害等级：</text>
+        <text class="level-tag level-tag--{{levelClass}}">{{result.level}}</text>
+      </view>
+      <text class="confidence-text">置信度：{{result.confidenceText}}</text>
+    </view>
+
+    <!-- 图片对比 -->
+    <view class="section-card">
+      <text class="section-title">病害图片对比</text>
+      <view class="compare-row">
+        <view class="compare-col">
+          <text class="compare-label">用户图片</text>
+          <view class="compare-frame">
+            <image wx:if="{{userImageUrl}}" class="compare-img" src="{{userImageUrl}}" mode="aspectFit" />
+            <view wx:else class="compare-empty">暂无图片</view>
+          </view>
+        </view>
+        <view class="compare-col">
+          <text class="compare-label">标准病害图</text>
+          <view class="compare-frame">
+            <image wx:if="{{result.standardImageUrl}}" class="compare-img" src="{{result.standardImageUrl}}" mode="aspectFit" />
+            <view wx:else class="compare-empty">暂无官方标准图</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-area">
+      <view class="btn-primary-action" bindtap="goDiagnose" hover-class="btn-primary-action--press" hover-stay-time="120">
+        立即智能诊断
+      </view>
+      <view class="btn-secondary-action" bindtap="goCommunity" hover-class="btn-secondary-action--press" hover-stay-time="120">
+        查看农友相关讨论
+      </view>
+    </view>
+  </view>
+
+  <view class="page-bottom"></view>
+</view>

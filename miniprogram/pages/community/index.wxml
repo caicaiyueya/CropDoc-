@@ -1,0 +1,50 @@
+<view class="tab-page">
+  <sub-page-header
+    title="农友交流"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+
+  <scroll-view class="tab-page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="page-body">
+      <view
+        class="publish-btn"
+        bindtap="goCreate"
+        hover-class="publish-btn--press"
+        hover-stay-time="120"
+      >
+        发布帖子
+      </view>
+
+      <view
+        class="post-card section-card"
+        wx:for="{{posts}}"
+        wx:key="_id"
+        bindtap="goDetail"
+        data-id="{{item._id}}"
+        hover-class="post-card--press"
+        hover-stay-time="120"
+      >
+        <view class="post-head">
+          <text class="post-title">{{item.title}}</text>
+          <view class="post-tags">
+            <text wx:if="{{item.isOfficial}}" class="tag-official">官方</text>
+            <text wx:if="{{item.postType === 'science'}}" class="tag-science">科普</text>
+          </view>
+        </view>
+        <view class="author-row">
+          <text class="author-name">{{item.nickname}}</text>
+        </view>
+        <text class="post-summary">{{item.summary}}</text>
+        <view class="post-card-foot">
+          <text wx:if="{{item.pinned}}" class="tag-pinned">置顶</text>
+          <view wx:else></view>
+        </view>
+      </view>
+
+      <view wx:if="{{!posts.length}}" class="empty">暂无帖子，快来分享经验吧</view>
+    </view>
+    <view class="page-bottom"></view>
+  </scroll-view>
+</view>

@@ -1,0 +1,30 @@
+<view class="sub-page">
+  <sub-page-header
+    tier="secondary"
+    title="我的收藏"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+  <scroll-view class="sub-page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="page-body">
+      <view
+        class="fav-card section-card"
+        wx:for="{{list}}"
+        wx:key="_id"
+        bindtap="goDetail"
+        data-type="{{item.targetType}}"
+        data-id="{{item.targetId}}"
+        hover-class="fav-card--press"
+        hover-stay-time="120"
+      >
+        <view class="fav-head">
+          <text class="fav-icon">⭐</text>
+          <text class="fav-title">{{item.titleText}}</text>
+        </view>
+        <text class="fav-meta">{{item.typeText}} · {{item.timeText}}</text>
+      </view>
+      <view wx:if="{{!list.length}}" class="empty">暂无收藏</view>
+    </view>
+  </scroll-view>
+</view>

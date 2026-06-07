@@ -1,0 +1,48 @@
+@import '../../styles/community-card.wxss';
+
+.sub-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f7f8fa;
+}
+
+.sub-page-scroll {
+  flex: 1;
+  height: 0;
+}
+
+.page-body {
+  padding: 8rpx 0 32rpx;
+}
+
+.detail-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #222222;
+  line-height: 1.5;
+}
+
+.detail-meta {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  color: #888888;
+  line-height: 1.55;
+}
+
+.detail-cover {
+  width: 100%;
+  margin-top: 20rpx;
+  border-radius: 20rpx;
+  display: block;
+}
+
+.detail-content {
+  display: block;
+  margin-top: 24rpx;
+  font-size: 28rpx;
+  color: #444444;
+  line-height: 1.75;
+}

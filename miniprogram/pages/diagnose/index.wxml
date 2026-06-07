@@ -1,0 +1,110 @@
+<view class="chat-page">
+  <!-- 顶部导航（与识别页 / 识别结果页一致） -->
+  <sub-page-header
+    title="AI 问诊"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+
+  <!-- 聊天消息区 -->
+  <scroll-view
+    class="chat-scroll"
+    scroll-y
+    scroll-into-view="{{scrollId}}"
+    enhanced
+    show-scrollbar="{{false}}"
+  >
+    <!-- 空状态 -->
+    <view wx:if="{{!messages.length && !thinking}}" class="empty-state">
+      <view class="empty-icon-wrap">
+        <view class="ai-icon ai-icon--large"></view>
+      </view>
+      <text class="empty-hint">有任何农业种植、病害防治问题，都可以在这里提问哦～</text>
+    </view>
+
+    <!-- 消息列表 -->
+    <view
+      class="msg-row {{item.role === 'user' ? 'msg-row--user' : 'msg-row--assistant'}}"
+      wx:for="{{messages}}"
+      wx:key="id"
+      id="msg-{{index}}"
+    >
+      <view wx:if="{{item.role === 'assistant'}}" class="msg-avatar msg-avatar--ai">
+        <view class="ai-icon ai-icon--small"></view>
+      </view>
+
+      <view class="msg-main {{item.role === 'user' ? 'msg-main--user' : 'msg-main--assistant'}}">
+        <view class="msg-bubble {{item.role === 'user' ? 'msg-bubble--user' : 'msg-bubble--assistant'}}">
+          <text user-select>{{item.content}}</text>
+        </view>
+        <view class="msg-meta {{item.role === 'user' ? 'msg-meta--user' : 'msg-meta--assistant'}}">
+          <text class="msg-time">{{item.time}}</text>
+          <text wx:if="{{item.role === 'user' && item.sent}}" class="msg-status">已发送</text>
+        </view>
+      </view>
+
+      <view wx:if="{{item.role === 'user'}}" class="msg-avatar msg-avatar--user">
+        <image wx:if="{{userAvatar}}" class="user-avatar-img" src="{{userAvatar}}" mode="aspectFill" />
+        <text wx:else class="user-avatar-emoji">🌾</text>
+      </view>
+    </view>
+
+    <!-- AI 思考中 -->
+    <view wx:if="{{thinking}}" class="msg-row msg-row--assistant" id="msg-thinking">
+      <view class="msg-avatar msg-avatar--ai">
+        <view class="ai-icon ai-icon--small"></view>
+      </view>
+      <view class="msg-main msg-main--assistant">
+        <view class="thinking-box">
+          <view class="thinking-dots">
+            <view class="dot"></view>
+            <view class="dot"></view>
+            <view class="dot"></view>
+          </view>
+          <text class="thinking-text">AI 正在思考中...</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="chat-bottom-spacer"></view>
+  </scroll-view>
+
+  <!-- 底部输入区 -->
+  <view class="input-panel" style="padding-bottom: {{keyboardHeight > 0 ? 0 : safeBottom}}px; margin-bottom: {{keyboardHeight}}px;">
+    <view class="input-card">
+      <textarea
+        class="chat-input"
+        value="{{input}}"
+        bindinput="onInput"
+        placeholder="输入农业问题，如：玉米叶子发黄怎么办？"
+        placeholder-class="input-placeholder"
+        confirm-type="send"
+        bindconfirm="send"
+        auto-height
+        maxlength="-1"
+        show-confirm-bar="{{false}}"
+        adjust-position="{{true}}"
+        cursor-spacing="24"
+      />
+      <view class="input-toolbar">
+        <view
+          class="voice-btn"
+          bindtap="onVoiceTap"
+          hover-class="voice-btn--press"
+          hover-stay-time="120"
+        >
+          <view class="mic-icon"></view>
+        </view>
+        <view
+          class="send-btn {{canSend ? '' : 'send-btn--disabled'}}"
+          bindtap="send"
+          hover-class="{{canSend ? 'send-btn--press' : ''}}"
+          hover-stay-time="120"
+        >
+          发送
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

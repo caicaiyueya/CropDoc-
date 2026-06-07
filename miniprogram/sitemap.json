@@ -1,0 +1,4 @@
+{
+  "desc": "云农智诊",
+  "rules": [{ "action": "allow", "page": "*" }]
+}

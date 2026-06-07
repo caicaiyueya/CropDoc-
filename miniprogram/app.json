@@ -1,0 +1,45 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/detect/index",
+    "pages/detect-result/index",
+    "pages/diagnose/index",
+    "pages/chat/index",
+    "pages/community/index",
+    "pages/post-create/index",
+    "pages/post-detail/index",
+    "pages/disease-detail/index",
+    "pages/news-detail/index",
+    "pages/news-list/index",
+    "pages/profile/index",
+    "pages/profile/history",
+    "pages/profile/favorites",
+    "pages/profile/feedback",
+    "pages/about/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "云农智诊",
+    "navigationBarBackgroundColor": "#28B446",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F7F8FA"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#28B446",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/index", "text": "首页" },
+      { "pagePath": "pages/diagnose/index", "text": "诊断" },
+      { "pagePath": "pages/detect/index", "text": "识别" },
+      { "pagePath": "pages/community/index", "text": "社区" },
+      { "pagePath": "pages/profile/index", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "usingComponents": {
+    "sub-page-header": "/components/sub-page-header/index"
+  }
+}

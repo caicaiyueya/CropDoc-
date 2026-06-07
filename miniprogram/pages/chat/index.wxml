@@ -1,0 +1,11 @@
+<view class="chat-page">
+  <scroll-view class="messages" scroll-y scroll-into-view="{{scrollId}}">
+    <view class="msg {{item.role}}" wx:for="{{messages}}" wx:key="index" id="msg-{{index}}">
+      <text>{{item.content}}</text>
+    </view>
+  </scroll-view>
+  <view class="input-bar">
+    <input placeholder="输入农业问题，如：玉米叶子发黄怎么办？" value="{{input}}" bindinput="onInput" confirm-type="send" bindconfirm="send" />
+    <button size="mini" class="btn-primary" bindtap="send">发送</button>
+  </view>
+</view>

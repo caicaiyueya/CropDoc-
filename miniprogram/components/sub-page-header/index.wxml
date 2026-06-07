@@ -1,0 +1,33 @@
+<view class="page-header page-header--{{tier}}" style="min-height: {{headerMinHeight}}px;">
+  <image
+    wx:if="{{tier === 'primary'}}"
+    class="page-header-bg"
+    src="/assets/images/hero-bg.png"
+    mode="aspectFill"
+  />
+  <view
+    wx:if="{{tier === 'secondary'}}"
+    class="page-header-pattern"
+  ></view>
+  <view class="page-header-gradient {{tier === 'secondary' ? 'page-header-gradient--secondary' : ''}} {{variant === 'create' ? 'page-header-gradient--create' : ''}}"></view>
+  <view class="page-header-inner" style="padding-top: {{statusBarHeight}}px;">
+    <view class="page-header-bar">
+      <view
+        wx:if="{{showBack}}"
+        class="header-back"
+        bindtap="onBack"
+        hover-class="header-back--press"
+        hover-stay-time="120"
+      >
+        <view class="back-arrow"></view>
+      </view>
+      <view wx:else class="header-side"></view>
+      <view class="page-header-title-wrap">
+        <text class="page-header-title">{{title}}</text>
+        <text wx:if="{{titleSuffix}}" class="page-header-title-suffix">{{titleSuffix}}</text>
+      </view>
+      <view class="header-side"></view>
+    </view>
+  </view>
+  <view wx:if="{{tier === 'primary'}}" class="page-header-wave"></view>
+</view>

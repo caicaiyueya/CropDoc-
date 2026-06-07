@@ -1,0 +1,42 @@
+<view class="tab-page">
+  <sub-page-header
+    title="我的"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+
+  <scroll-view class="tab-page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="page-body">
+      <view class="user-card section-card">
+        <view class="avatar-wrap">
+          <image wx:if="{{user.avatar}}" class="avatar" src="{{user.avatar}}" mode="aspectFill" />
+          <view wx:else class="avatar avatar-placeholder">🌾</view>
+        </view>
+        <view class="user-info">
+          <text class="nickname">{{user.nickname || '农友'}}</text>
+          <text class="user-phone">{{user.phone || '未绑定手机'}}</text>
+        </view>
+      </view>
+
+      <view class="menu-card section-card">
+        <view
+          class="menu-item"
+          wx:for="{{menuItems}}"
+          wx:key="url"
+          bindtap="go"
+          data-url="{{item.url}}"
+          hover-class="menu-item--press"
+          hover-stay-time="120"
+        >
+          <view class="menu-icon-box">
+            <text class="menu-icon">{{item.icon}}</text>
+          </view>
+          <text class="menu-text">{{item.label}}</text>
+          <text class="menu-arrow">›</text>
+        </view>
+      </view>
+    </view>
+    <view class="page-bottom"></view>
+  </scroll-view>
+</view>

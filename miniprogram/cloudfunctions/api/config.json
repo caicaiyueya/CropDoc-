@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "openapi": []
+  },
+  "env": {
+    "DEEPSEEK_API_KEY": "",
+    "CLOUD_RUN_SERVICE": "ai-service",
+    "MOCK_DETECT": "true"
+  }
+}

@@ -1,0 +1,24 @@
+<view class="sub-page">
+  <sub-page-header
+    tier="secondary"
+    title="我的诊断历史"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+  <scroll-view class="sub-page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="page-body">
+      <view class="record-card section-card" wx:for="{{records}}" wx:key="_id">
+        <view class="record-head">
+          <view class="record-icon">🔬</view>
+          <view class="record-info">
+            <view class="record-title">{{item.cropCn}} · {{item.diseaseName}}</view>
+            <text class="record-meta">{{item.timeText}} · {{item.level || '—'}}</text>
+          </view>
+        </view>
+        <image wx:if="{{item.imageUrl}}" class="record-thumb" src="{{item.imageUrl}}" mode="aspectFill" />
+      </view>
+      <view wx:if="{{!records.length}}" class="empty">暂无诊断记录</view>
+    </view>
+  </scroll-view>
+</view>

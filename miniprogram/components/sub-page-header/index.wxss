@@ -1,0 +1,162 @@
+.page-header {
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  padding-bottom: 36rpx;
+  box-sizing: border-box;
+}
+
+.page-header-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.page-header-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(26, 120, 60, 0.88) 0%,
+    rgba(40, 180, 70, 0.78) 50%,
+    rgba(80, 190, 90, 0.62) 100%
+  );
+  z-index: 1;
+}
+
+.page-header-gradient--create {
+  background: linear-gradient(
+    160deg,
+    rgba(18, 96, 48, 0.92) 0%,
+    rgba(28, 150, 62, 0.86) 50%,
+    rgba(45, 165, 72, 0.72) 100%
+  );
+}
+
+/* 二级页：无实景图，清新浅绿渐变，与一级 Tab 页区分但色调相近 */
+.page-header--secondary {
+  padding-bottom: 0;
+}
+
+.page-header-pattern {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 22% 88%, rgba(200, 245, 200, 0.55) 0%, transparent 48%),
+    radial-gradient(circle at 82% 10%, rgba(255, 255, 255, 0.28) 0%, transparent 42%),
+    linear-gradient(155deg, #3cb85e 0%, #48c96a 42%, #5ed47e 100%);
+  z-index: 0;
+}
+
+.page-header-gradient--secondary {
+  background: linear-gradient(
+    168deg,
+    rgba(40, 180, 70, 0.38) 0%,
+    rgba(62, 196, 88, 0.28) 45%,
+    rgba(90, 210, 108, 0.16) 100%
+  );
+}
+
+.page-header--secondary .page-header-gradient--create {
+  background: linear-gradient(
+    168deg,
+    rgba(36, 165, 64, 0.48) 0%,
+    rgba(52, 185, 78, 0.36) 50%,
+    rgba(72, 200, 96, 0.22) 100%
+  );
+}
+
+.page-header--secondary .page-header-title {
+  font-size: 40rpx;
+  letter-spacing: 1rpx;
+}
+
+.page-header-inner {
+  position: relative;
+  z-index: 4;
+  box-sizing: border-box;
+  padding-bottom: 16rpx;
+}
+
+.page-header-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 24rpx 0 16rpx;
+}
+
+.page-header-title-wrap {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  max-width: calc(100% - 180rpx);
+  pointer-events: none;
+}
+
+.page-header-title {
+  color: #ffffff;
+  font-size: 48rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+  line-height: 1.45;
+  text-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-header-title-suffix {
+  font-size: 32rpx;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.header-back {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.header-back--press {
+  opacity: 0.75;
+  transform: scale(0.94);
+}
+
+.back-arrow {
+  width: 20rpx;
+  height: 20rpx;
+  border-left: 5rpx solid #fff;
+  border-bottom: 5rpx solid #fff;
+  transform: rotate(45deg);
+  margin-left: 8rpx;
+}
+
+.header-side {
+  width: 64rpx;
+  flex-shrink: 0;
+}
+
+.page-header-wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32rpx;
+  background: #f7f8fa;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  z-index: 2;
+}

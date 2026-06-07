@@ -1,0 +1,20 @@
+<view class="sub-page">
+  <sub-page-header
+    tier="secondary"
+    title="关于我们"
+    statusBarHeight="{{statusBarHeight}}"
+    headerMinHeight="{{headerMinHeight}}"
+    bind:back="goBack"
+  />
+  <scroll-view class="sub-page-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="page-body">
+      <view class="about-card section-card">
+        <text class="about-name">云农智诊</text>
+        <text class="about-version">版本：1.0.0</text>
+        <text class="about-desc">云农智诊是一款智慧农业工具，提供 AI 病虫害识别、智能诊断与农友交流服务。</text>
+        <text class="about-desc">识别结果仅供参考，严重情况请联系当地农技站。</text>
+        <text class="about-foot">课程设计项目 · NFNet-F1 + DeepSeek</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

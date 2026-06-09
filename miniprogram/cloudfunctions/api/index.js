@@ -67,7 +67,7 @@ exports.main = async (event, context) => {
       case 'createPost': return await createPost(openid, data)
       case 'addComment': return await addComment(openid, data)
       case 'toggleFavorite': return await toggleFavorite(openid, data)
-      case 'getDisease': return await getDisease(data)
+      case 'getDisease': return await getDisease(openid, data)
       case 'getNews': return await getNews(data)
       case 'listNews': return await listNews(data)
       default: return fail('未知操作: ' + action, 400)
@@ -375,22 +375,66 @@ async function detectHistory(openid) {
   return ok({ records: res.data })
 }
 
+function toTextSummary(text, len = 60) {
+  if (!text) return ''
+  const plain = String(text).replace(/\s+/g, ' ').trim()
+  return plain.length > len ? `${plain.slice(0, len)}…` : plain
+}
+
+function pickPostCover(post) {
+  if (!post) return ''
+  if (post.coverUrl) return post.coverUrl
+  if (post.images) {
+    const first = String(post.images).split(',')[0].trim()
+    if (first) return first
+  }
+  return ''
+}
+
 async function listFavorites(openid) {
   const res = await db.collection('favorites').where({ openid }).orderBy('createdAt', 'desc').get()
   const list = await Promise.all(res.data.map(async item => {
-    let title = ''
+    const row = {
+      ...item,
+      available: false,
+      title: '',
+      subtitle: '',
+      coverUrl: '',
+      nickname: ''
+    }
     if (item.targetType === 'post') {
       try {
-        const post = await db.collection('posts').doc(item.targetId).get()
-        title = post.data.title || ''
+        const postRes = await db.collection('posts').doc(item.targetId).get()
+        const post = postRes.data
+        if (post) {
+          const enriched = (await enrichPosts([post]))[0]
+          row.available = true
+          row.title = post.title || '帖子'
+          row.subtitle = toTextSummary(post.content, 72) || enriched.nickname || ''
+          row.nickname = enriched.nickname || ''
+          row.postType = post.postType || 'discussion'
+          row.isOfficial = enriched.isOfficial === true
+          row.coverUrl = pickPostCover(post)
+        }
       } catch (e) { /* post may have been removed */ }
     } else if (item.targetType === 'disease') {
       try {
-        const disease = await db.collection('diseases').doc(item.targetId).get()
-        title = disease.data.nameCn || ''
+        const diseaseRes = await db.collection('diseases').doc(item.targetId).get()
+        const disease = diseaseRes.data
+        if (disease) {
+          row.available = true
+          row.title = disease.nameCn || '病害'
+          row.subtitle = disease.cropCn
+            ? `作物：${disease.cropCn}`
+            : toTextSummary(disease.symptoms, 48)
+        }
       } catch (e) { /* disease may have been removed */ }
     }
-    return { ...item, title }
+    if (!row.title) {
+      row.title = item.targetType === 'post' ? '帖子已下架' : '病害已删除'
+      row.subtitle = '原内容可能已被移除'
+    }
+    return row
   }))
   return ok(list)
 }
@@ -460,9 +504,14 @@ async function toggleFavorite(openid, { targetType, targetId }) {
   return ok({ favorited: true })
 }
 
-async function getDisease({ id }) {
+async function getDisease(openid, { id }) {
   const res = await db.collection('diseases').doc(id).get()
-  return ok(res.data)
+  let favorited = false
+  if (openid && id) {
+    const fav = await db.collection('favorites').where({ openid, targetType: 'disease', targetId: id }).count()
+    favorited = fav.total > 0
+  }
+  return ok({ ...res.data, favorited })
 }
 
 async function getNews({ id }) {

@@ -49,3 +49,35 @@
   color: #444444;
   line-height: 1.75;
 }
+
+.favorite-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  width: 88%;
+  margin: 32rpx auto 0;
+  padding: 26rpx 0;
+  background: #ffffff;
+  border: 2rpx solid #28b446;
+  border-radius: 24rpx;
+  color: #28b446;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.favorite-btn--active {
+  background: #e8f5e9;
+}
+
+.favorite-btn--press {
+  opacity: 0.88;
+  transform: scale(0.98);
+}
+
+.favorite-btn-icon {
+  font-size: 34rpx;
+  line-height: 1;
+}

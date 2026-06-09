@@ -15,14 +15,28 @@
         bindtap="goDetail"
         data-type="{{item.targetType}}"
         data-id="{{item.targetId}}"
+        data-available="{{item.available}}"
         hover-class="fav-card--press"
         hover-stay-time="120"
       >
-        <view class="fav-head">
-          <text class="fav-icon">⭐</text>
-          <text class="fav-title">{{item.titleText}}</text>
+        <view class="fav-main">
+          <view class="fav-head">
+            <text class="fav-title">{{item.titleText}}</text>
+          </view>
+          <text wx:if="{{item.summaryText}}" class="fav-summary">{{item.summaryText}}</text>
+          <view class="fav-foot">
+            <text class="fav-meta">{{item.timeText}}</text>
+            <text wx:if="{{item.nickname && item.targetType === 'post'}}" class="fav-author">{{item.nickname}}</text>
+          </view>
         </view>
-        <text class="fav-meta">{{item.typeText}} · {{item.timeText}}</text>
+        <image
+          wx:if="{{item.coverDisplay}}"
+          class="fav-cover"
+          src="{{item.coverDisplay}}"
+          mode="aspectFill"
+        />
+        <view wx:elif="{{item.targetType === 'disease'}}" class="fav-cover fav-cover--disease">🌿</view>
+        <text class="fav-arrow">›</text>
       </view>
       <view wx:if="{{!list.length}}" class="empty">暂无收藏</view>
     </view>

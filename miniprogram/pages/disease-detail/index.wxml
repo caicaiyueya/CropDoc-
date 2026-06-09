@@ -17,6 +17,15 @@
         <text class="detail-content">{{disease.treatment}}</text>
         <text class="section-heading">详细说明</text>
         <text class="detail-content">{{disease.description}}</text>
+        <view
+          class="favorite-btn {{disease.favorited ? 'favorite-btn--active' : ''}}"
+          bindtap="toggleFavorite"
+          hover-class="favorite-btn--press"
+          hover-stay-time="120"
+        >
+          <text class="favorite-btn-icon">{{disease.favorited ? '★' : '☆'}}</text>
+          <text>{{disease.favorited ? '已收藏' : '收藏'}}</text>
+        </view>
       </view>
     </view>
   </scroll-view>

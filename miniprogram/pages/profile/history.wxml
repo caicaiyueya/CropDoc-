@@ -10,13 +10,13 @@
     <view class="page-body">
       <view class="record-card section-card" wx:for="{{records}}" wx:key="_id">
         <view class="record-head">
-          <view class="record-icon">🔬</view>
+          <image wx:if="{{item.imageUrl}}" class="record-thumb" src="{{item.imageUrl}}" mode="aspectFill" />
+          <view wx:else class="record-thumb record-thumb--placeholder">🔬</view>
           <view class="record-info">
             <view class="record-title">{{item.cropCn}} · {{item.diseaseName}}</view>
             <text class="record-meta">{{item.timeText}} · {{item.level || '—'}}</text>
           </view>
         </view>
-        <image wx:if="{{item.imageUrl}}" class="record-thumb" src="{{item.imageUrl}}" mode="aspectFill" />
       </view>
       <view wx:if="{{!records.length}}" class="empty">暂无诊断记录</view>
     </view>
